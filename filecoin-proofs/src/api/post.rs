@@ -104,8 +104,7 @@ impl<Tree: 'static + MerkleTreeTrait> PrivateReplicaInfo<Tree> {
 
         ensure!(replica.exists(), "Sealed replica does not exist");
 
-        Ok(PrivateReplicaInfo {
-            replica,
+        Ok(PrivateReplicaInfo {            replica,
             comm_r,
             aux,
             cache_dir,
@@ -491,6 +490,11 @@ pub fn generate_window_post<Tree: 'static + MerkleTreeTrait>(
     let pub_params: compound_proof::PublicParams<fallback::FallbackPoSt<Tree>> =
         fallback::FallbackPoStCompound::setup(&setup_params)?;
     let groth_params = get_post_params::<Tree>(&post_config)?;
+
+    // let trees: Vec<_> = replicas
+    //     .iter()
+    //     .map(|(_id, replica)| replica.merkle_tree(post_config.sector_size))
+    //     .collect::<Result<_>>()?;
 
     info!("mt:generate_window_post:merkle_tree:start");
 
