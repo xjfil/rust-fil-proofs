@@ -31,7 +31,7 @@ use crate::types::{
     SectorSize, SnarkProof, TemporaryAux, VanillaProof,
 };
 use crate::PoStType;
-
+use rayon::prelude::*;
 /// The minimal information required about a replica, in order to be able to generate
 /// a PoSt over it.
 #[derive(Debug)]
@@ -896,8 +896,9 @@ pub fn generate_window_post<Tree: 'static + MerkleTreeTrait>(
         fallback::FallbackPoStCompound::setup(&setup_params)?;
     let groth_params = get_post_params::<Tree>(&post_config)?;
 
+    info!("mt:generate_window_post:merkle_tree:start");
     let trees: Vec<_> = replicas
-        .iter()
+        .par_iter()
         .map(|(sector_id, replica)| {
             replica
                 .merkle_tree(post_config.sector_size)
@@ -906,6 +907,7 @@ pub fn generate_window_post<Tree: 'static + MerkleTreeTrait>(
                 })
         })
         .collect::<Result<_>>()?;
+    info!("mt:generate_window_post:merkle_tree:finish");
 
     let mut pub_sectors = Vec::with_capacity(sector_count);
     let mut priv_sectors = Vec::with_capacity(sector_count);
