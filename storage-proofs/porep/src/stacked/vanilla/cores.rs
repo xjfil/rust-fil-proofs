@@ -93,7 +93,7 @@ pub fn bind_core(core_index: CoreIndex) -> Result<Cleanup> {
 //    bind_to.singlify();
 //
 //    // Thread binding before explicit set.
-//    let before = locked_topo.get_cpubind_for_thread(tid, CPUBIND_THREAD);
+     let before = locked_topo.get_cpubind_for_thread(tid, CPUBIND_THREAD);
 //
 //    debug!("binding to {:?}", bind_to);
     // Set the binding.
