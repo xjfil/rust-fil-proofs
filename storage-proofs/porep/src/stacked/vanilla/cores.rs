@@ -97,13 +97,13 @@ pub fn bind_core(core_index: CoreIndex) -> Result<Cleanup> {
 
     debug!("binding to {:?}", bind_to);
     // Set the binding.
-    let result = locked_topo
-        .set_cpubind_for_thread(tid, bind_to, CPUBIND_THREAD)
-        .map_err(|err| anyhow::format_err!("failed to bind CPU: {:?}", err));
-
-    if result.is_err() {
-        warn!("error in bind_core, {:?}", result);
-    }
+//    let result = locked_topo
+//        .set_cpubind_for_thread(tid, bind_to, CPUBIND_THREAD)
+//        .map_err(|err| anyhow::format_err!("failed to bind CPU: {:?}", err));
+//
+//    if result.is_err() {
+//        warn!("error in bind_core, {:?}", result);
+//    }
 
     Ok(Cleanup {
         tid,
