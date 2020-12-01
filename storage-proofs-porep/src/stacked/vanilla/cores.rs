@@ -76,13 +76,14 @@ impl Drop for Cleanup {
 pub fn bind_core(core_index: CoreIndex) -> Result<Cleanup> {
     let child_topo = &TOPOLOGY;
     let tid = get_thread_id();
-    let mut locked_topo = child_topo.lock().expect("poisoned lock");
+    let locked_topo = child_topo.lock().expect("poisoned lock");
     let core = get_core_by_index(&locked_topo, core_index)
         .map_err(|err| format_err!("failed to get core at index {}: {:?}", core_index.0, err))?;
 
     let cpuset = core
         .allowed_cpuset()
         .ok_or_else(|| format_err!("no allowed cpuset for core at index {}", core_index.0,))?;
+
     debug!("allowed cpuset: {:?}", cpuset);
     let mut bind_to = cpuset;
 
@@ -94,13 +95,13 @@ pub fn bind_core(core_index: CoreIndex) -> Result<Cleanup> {
 
     debug!("binding to {:?}", bind_to);
     // Set the binding.
-    let result = locked_topo
-        .set_cpubind_for_thread(tid, bind_to, CPUBIND_THREAD)
-        .map_err(|err| format_err!("failed to bind CPU: {:?}", err));
+    // let result = locked_topo
+    //     .set_cpubind_for_thread(tid, bind_to, CPUBIND_THREAD)
+    //     .map_err(|err| format_err!("failed to bind CPU: {:?}", err));
 
-    if result.is_err() {
-        warn!("error in bind_core, {:?}", result);
-    }
+    // if result.is_err() {
+    //     warn!("error in bind_core, {:?}", result);
+    // }
 
     Ok(Cleanup {
         tid,
