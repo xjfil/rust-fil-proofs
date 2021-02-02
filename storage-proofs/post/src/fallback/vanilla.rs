@@ -355,8 +355,6 @@ impl<'a, Tree: 'a + MerkleTreeTrait> ProofScheme<'a> for FallbackPoSt<'a, Tree> 
         priv_inputs: &'b Self::PrivateInputs,
         partition_count: usize,
     ) -> Result<Vec<Self::Proof>> {
-        info!("mt prove_all_partitions start");
-
         ensure!(
             priv_inputs.sectors.len() == pub_inputs.sectors.len(),
             "inconsistent number of private and public sectors {} != {}",
@@ -366,7 +364,6 @@ impl<'a, Tree: 'a + MerkleTreeTrait> ProofScheme<'a> for FallbackPoSt<'a, Tree> 
 
         let num_sectors_per_chunk = pub_params.sector_count;
         let num_sectors = pub_inputs.sectors.len();
-        info!("mv prove_all_partitions start1");
         ensure!(
             num_sectors <= partition_count * num_sectors_per_chunk,
             "cannot prove the provided number of sectors: {} > {} * {}",
@@ -379,7 +376,6 @@ impl<'a, Tree: 'a + MerkleTreeTrait> ProofScheme<'a> for FallbackPoSt<'a, Tree> 
 
         // Use `BTreeSet` so failure result will be canonically ordered (sorted).
         let mut faulty_sectors = BTreeSet::new();
-        info!("mv prove_all_partitions start2");
         for (j, (pub_sectors_chunk, priv_sectors_chunk)) in pub_inputs
             .sectors
             .chunks(num_sectors_per_chunk)
@@ -395,8 +391,6 @@ impl<'a, Tree: 'a + MerkleTreeTrait> ProofScheme<'a> for FallbackPoSt<'a, Tree> 
             let mut proofs_map = HashMap::new();
             let mut priv_sector_map = HashMap::new();
 
-
-            info!("mt: loop pub_sectors_chunk start {}", SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis());
             for (i, (pub_sector, priv_sector)) in pub_sectors_chunk //2349
                 .iter()
                 .zip(priv_sectors_chunk.iter())
@@ -416,8 +410,6 @@ impl<'a, Tree: 'a + MerkleTreeTrait> ProofScheme<'a> for FallbackPoSt<'a, Tree> 
                     tree_leafs,
                     Tree::Arity::to_usize(),
                 );
-
-
 
                 proofs_map.insert(sector_id, Vec::new());
                 priv_sector_map.insert(sector_id, priv_sector);
@@ -443,7 +435,7 @@ impl<'a, Tree: 'a + MerkleTreeTrait> ProofScheme<'a> for FallbackPoSt<'a, Tree> 
                     })
                 }
             }
-            info!("mt: loop pub_sectors_chunk end and loop proof start{}", SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis());
+            info!("mt: loop pub_sectors_chunk end");
 
             for proof_or_fault in to_proofs
                 .into_par_iter()
@@ -478,7 +470,7 @@ impl<'a, Tree: 'a + MerkleTreeTrait> ProofScheme<'a> for FallbackPoSt<'a, Tree> 
                     }
                 }
             }
-            info!("mt: loop proof end {}", SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis());
+            info!("mt: loop proof end");
 
             for sector in sector_seq {
                 proofs.push(SectorProof {
@@ -495,7 +487,7 @@ impl<'a, Tree: 'a + MerkleTreeTrait> ProofScheme<'a> for FallbackPoSt<'a, Tree> 
             }
 
             partition_proofs.push(Proof { sectors: proofs });
-            info!("mt: loop partition end {}", SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis());
+            info!("mt: loop partition end");
         }
 
         info!("mt: prove_all_partitions finish");
