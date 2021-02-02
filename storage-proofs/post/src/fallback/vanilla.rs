@@ -366,7 +366,7 @@ impl<'a, Tree: 'a + MerkleTreeTrait> ProofScheme<'a> for FallbackPoSt<'a, Tree> 
 
         let num_sectors_per_chunk = pub_params.sector_count;
         let num_sectors = pub_inputs.sectors.len();
-        println!("dc prove_all_partitions start1");
+        info!("mv prove_all_partitions start1");
         ensure!(
             num_sectors <= partition_count * num_sectors_per_chunk,
             "cannot prove the provided number of sectors: {} > {} * {}",
@@ -379,7 +379,7 @@ impl<'a, Tree: 'a + MerkleTreeTrait> ProofScheme<'a> for FallbackPoSt<'a, Tree> 
 
         // Use `BTreeSet` so failure result will be canonically ordered (sorted).
         let mut faulty_sectors = BTreeSet::new();
-        println!("dc prove_all_partitions start2");
+        info!("mv prove_all_partitions start2");
         for (j, (pub_sectors_chunk, priv_sectors_chunk)) in pub_inputs
             .sectors
             .chunks(num_sectors_per_chunk)
@@ -387,7 +387,6 @@ impl<'a, Tree: 'a + MerkleTreeTrait> ProofScheme<'a> for FallbackPoSt<'a, Tree> 
             .enumerate()
         {
             trace!("proving partition {}", j);
-            println!("mt: loop partition start {}", SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis());
 
             let mut proofs = Vec::with_capacity(num_sectors_per_chunk);
 
@@ -397,7 +396,7 @@ impl<'a, Tree: 'a + MerkleTreeTrait> ProofScheme<'a> for FallbackPoSt<'a, Tree> 
             let mut priv_sector_map = HashMap::new();
 
 
-            println!("mt: loop pub_sectors_chunk start {}", SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis());
+            info!("mt: loop pub_sectors_chunk start {}", SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis());
             for (i, (pub_sector, priv_sector)) in pub_sectors_chunk //2349
                 .iter()
                 .zip(priv_sectors_chunk.iter())
@@ -444,9 +443,8 @@ impl<'a, Tree: 'a + MerkleTreeTrait> ProofScheme<'a> for FallbackPoSt<'a, Tree> 
                     })
                 }
             }
-            println!("mt: loop pub_sectors_chunk end {}", SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis());
+            info!("mt: loop pub_sectors_chunk end and loop proof start{}", SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis());
 
-            println!("mt: loop proof start {}", SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis());
             for proof_or_fault in to_proofs
                 .into_par_iter()
                 .map(|n| {
@@ -454,14 +452,12 @@ impl<'a, Tree: 'a + MerkleTreeTrait> ProofScheme<'a> for FallbackPoSt<'a, Tree> 
                         n.challenged_leaf_start as usize,
                         Some(n.rows_to_discard),
                     );
-                    println!("mt: loop proof {} end", n.sector_id);
 
                     match proof {
                         Ok(proof) => {
                             if proof.validate(n.challenged_leaf_start as usize)
                                 && proof.root() == priv_sector_map.get(&n.sector_id).unwrap().comm_r_last
                             {
-                                println!("mt: loop proof {} return", n.sector_id);
                                 Ok(ProofOrFault::Proof(proof, n.sector_id))
                             } else {
                                 Ok(ProofOrFault::Fault(n.sector_id))
@@ -482,7 +478,7 @@ impl<'a, Tree: 'a + MerkleTreeTrait> ProofScheme<'a> for FallbackPoSt<'a, Tree> 
                     }
                 }
             }
-            println!("mt: loop proof end {}", SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis());
+            info!("mt: loop proof end {}", SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis());
 
             for sector in sector_seq {
                 proofs.push(SectorProof {
@@ -499,7 +495,7 @@ impl<'a, Tree: 'a + MerkleTreeTrait> ProofScheme<'a> for FallbackPoSt<'a, Tree> 
             }
 
             partition_proofs.push(Proof { sectors: proofs });
-            println!("mt: loop partition end {}", SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis());
+            info!("mt: loop partition end {}", SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis());
         }
 
         info!("mt: prove_all_partitions finish");
