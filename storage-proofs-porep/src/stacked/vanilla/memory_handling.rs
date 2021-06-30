@@ -31,7 +31,8 @@ struct IncrementingCursor {
 }
 
 fn compare_and_swap(atomic: &AtomicUsize, before: usize, after: usize) -> usize {
-    match atomic.compare_exchange_weak(before, after, Ordering::SeqCst, Ordering::SeqCst) {
+    //match atomic.compare_exchange_weak(before, after, Ordering::SeqCst, Ordering::SeqCst) {
+    match atomic.compare_exchange(before, after, Ordering::SeqCst, Ordering::SeqCst) {
         Ok(x) => {
             assert_eq!(x, before);
             before
