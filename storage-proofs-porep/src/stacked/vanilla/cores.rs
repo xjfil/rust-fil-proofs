@@ -3,7 +3,7 @@ use std::sync::{Mutex, MutexGuard};
 use anyhow::{format_err, Result};
 use hwloc::{Bitmap, ObjectType, Topology, TopologyObject, CPUBIND_THREAD};
 use lazy_static::lazy_static;
-use log::{debug, info, warn};
+use log::{debug, info};
 use storage_proofs_core::settings::SETTINGS;
 
 type CoreGroup = Vec<CoreIndex>;
@@ -76,7 +76,8 @@ impl Drop for Cleanup {
 pub fn bind_core(core_index: CoreIndex) -> Result<Cleanup> {
     let child_topo = &TOPOLOGY;
     let tid = get_thread_id();
-    let locked_topo = child_topo.lock().expect("poisoned lock");
+    //let locked_topo = child_topo.lock().expect("poisoned lock");
+    let locked_topo = child_topo.lock().unwrap();
     let core = get_core_by_index(&locked_topo, core_index)
         .map_err(|err| format_err!("failed to get core at index {}: {:?}", core_index.0, err))?;
 
